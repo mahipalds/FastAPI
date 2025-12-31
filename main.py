@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Path, HTTPException, Query
 import json
 
 app = FastAPI() #Defining Fast api object
@@ -31,3 +31,31 @@ def about():
 def view():
     consultant_data = load_data()
     return consultant_data 
+
+#creating dynamic path to view any particular consultant data
+@app.get("/consultant/{consultant_id}")
+def view_consultant(consultant_id: str = Path(...,description="ID of the consultant in the database", example="C01")):
+    data = load_data()
+    if consultant_id in data:
+        return data[consultant_id]
+    raise HTTPException(status_code=404, detail="Consultant not found")
+
+#creating endpoint to view consultant data in sorted way 
+@app.get("/sort")
+def sort_consultant(sort_by: str =Query(..., description= "Sort on the basis of pay rate, bill rate, or Margin"), order: str = Query('asc', description='Sort in asc or desc order')):
+    
+    valid_fields = ['pay_rate','billing_rate','margin']
+    
+    if sort_by not in valid_fields:
+        raise HTTPException(status_code=400, detail=f'Invalid Field, select from {valid_fields}')
+    
+    if order not in ['asc','desc']:
+        raise HTTPException(status_code=400, detail='Invalid Order select b/w asc and desc')
+    
+    data = load_data()
+
+    sort_order= True if order == 'desc' else False 
+
+    sorted_data = sorted(data.values(), key = lambda x: x.get(sort_by, 0), reverse= sort_order)
+
+    return sorted_data
