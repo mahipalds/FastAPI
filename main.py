@@ -163,3 +163,7 @@ def delete_consultant(consultant_id: str):
     del data[consultant_id]
     save_data(data) # Save the updated data to the JSON file
     return JSONResponse(status_code= 200, content= {'message': 'Consultant Deleted'})
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
